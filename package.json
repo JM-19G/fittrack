@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.4",
+    "tailwindcss": "^4.2.4"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "lucide-react": "^1.11.0",
+    "react-router-dom": "^7.14.2",
+    "recharts": "^3.8.1"
+  }
+}
