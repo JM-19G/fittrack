@@ -18,7 +18,12 @@ export function AuthProvider({ children }) {
   const register = useCallback((name, email, password) => {
     const users = getUsers()
     if (users[email]) return { error: 'Email already registered' }
-    const newUser = { id: crypto.randomUUID(), name, email, createdAt: new Date().toISOString() }
+    const newUser = {
+      id: crypto.randomUUID(),
+      name,
+      email,
+      createdAt: new Date().toISOString()
+    }
     users[email] = { ...newUser, password }
     saveUsers(users)
     localStorage.setItem(SESSION_KEY, JSON.stringify(newUser))
@@ -29,7 +34,8 @@ export function AuthProvider({ children }) {
   const login = useCallback((email, password) => {
     const users = getUsers()
     const found = users[email]
-    if (!found || found.password !== password) return { error: 'Invalid email or password' }
+    if (!found) return { error: 'No account found with this email' }
+    if (found.password !== password) return { error: 'Incorrect password' }
     const { password: _, ...userData } = found
     localStorage.setItem(SESSION_KEY, JSON.stringify(userData))
     setUser(userData)
