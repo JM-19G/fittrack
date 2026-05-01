@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useFitness } from '../context/FitnessContext'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { useToast } from '../components/Toast'
+import { exportLogsAsCSV } from '../utils/exportCSV'
 
 const TYPES = ['All', 'Running', 'Cycling', 'Walking', 'Swimming', 'Strength Training', 'HIIT', 'Yoga', 'Other']
 
@@ -39,13 +42,29 @@ export default function HistoryPage() {
 
   const navigate = useNavigate()
 
+  const { user } = useAuth()
+
+  const { showToast } = useToast()
+
   return (
     <div className="flex flex-col gap-4">
 
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">History</h1>
-        <p className="text-sm text-gray-400 mt-1">{logs.length} total entries</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">History</h1>
+          <p className="text-sm text-gray-400 mt-1">{logs.length} total entries</p>
+        </div>
+        <button
+          onClick={() => {
+            const success = exportLogsAsCSV(logs, user?.name || 'user')
+            if (success) showToast('Workout history exported!', 'success')
+            else showToast('No logs to export', 'warning')
+          }}
+         className="flex items-center gap-2 bg-gray-900 border border-white/10 text-gray-400 hover:text-green-400 hover:border-green-400/30 px-3 py-2 rounded-xl text-xs font-medium transition"
+         >
+          ⬇ Export CSV
+        </button>
       </div>
 
       {/* Search */}
