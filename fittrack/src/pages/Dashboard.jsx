@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext'
 import { useFitness } from '../context/FitnessContext'
 import { useStreak } from '../hooks/useStreak'
 import { useGoalProgress } from '../hooks/useGoalProgress'
+import WaterTracker from '../components/WaterTracker'
+import WeeklySummary from '../components/WeeklySummary'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -24,7 +26,9 @@ export default function Dashboard() {
       const dayLogs = logs.filter(l => l.date === d)
       return {
         date: d,
-        day: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][new Date(d).getDay() === 0 ? 6 : new Date(d).getDay() - 1],
+        day: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][
+          new Date(d).getDay() === 0 ? 6 : new Date(d).getDay() - 1
+        ],
         count: dayLogs.length,
         cals: dayLogs.reduce((s, l) => s + (l.calories || 0), 0),
       }
@@ -52,19 +56,39 @@ export default function Dashboard() {
       </div>
 
       {/* Streak Banner */}
-      {streak > 0 && (
+      {streak > 0 ? (
         <div className="bg-green-400/10 border border-green-400/25 rounded-2xl p-4 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-400 mb-1">CURRENT STREAK</p>
-            <p className="text-3xl font-bold text-green-400">🔥 {streak} {streak === 1 ? 'day' : 'days'}</p>
+            <p className="text-3xl font-bold text-green-400">
+              🔥 {streak} {streak === 1 ? 'day' : 'days'}
+            </p>
             <p className="text-xs text-gray-400 mt-1">Best: {longest} days</p>
           </div>
           <div className="text-right">
             {todayLogs.length > 0
               ? <span className="text-green-400 text-sm font-medium">✓ Logged today</span>
-              : <Link to="/log" className="text-sm font-medium text-blue-400 bg-blue-400/10 px-3 py-1.5 rounded-full">Log now →</Link>
+              : <Link
+                  to="/log"
+                  className="text-sm font-medium text-blue-400 bg-blue-400/10 px-3 py-1.5 rounded-full"
+                >
+                  Log now →
+                </Link>
             }
           </div>
+        </div>
+      ) : (
+        <div className="bg-gray-900 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Start your streak 🔥</p>
+            <p className="text-xs text-gray-400 mt-1">Log a workout today to begin</p>
+          </div>
+          <Link
+            to="/log"
+            className="text-sm font-bold text-gray-950 bg-green-400 px-4 py-2 rounded-xl hover:bg-green-300 transition"
+          >
+            Log now
+          </Link>
         </div>
       )}
 
@@ -84,30 +108,47 @@ export default function Dashboard() {
 
       {/* 7-Day Activity */}
       <div className="bg-gray-900 border border-white/10 rounded-2xl p-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">7-Day Activity</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+          7-Day Activity
+        </p>
         <div className="flex items-end gap-2 h-16">
           {weekLogs.map((d, i) => {
             const isToday = d.date === today
-            const h = d.cals ? Math.max(8, Math.round((d.cals / maxCals) * 56)) : 4
+            const h = d.cals
+              ? Math.max(8, Math.round((d.cals / maxCals) * 56))
+              : 4
             return (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <div
                   style={{ height: h }}
-                  className={`w-full rounded-t transition-all ${isToday ? 'bg-green-400' : d.count ? 'bg-blue-400' : 'bg-gray-700'}`}
+                  className={`w-full rounded-t transition-all
+                    ${isToday ? 'bg-green-400' : d.count ? 'bg-blue-400' : 'bg-gray-700'}`}
                 />
-                <span className={`text-xs ${isToday ? 'text-green-400' : 'text-gray-500'}`}>{d.day}</span>
+                <span className={`text-xs ${isToday ? 'text-green-400' : 'text-gray-500'}`}>
+                  {d.day}
+                </span>
               </div>
             )
           })}
         </div>
       </div>
 
+      {/* Weekly Summary */}
+      <WeeklySummary />
+
+      {/* Water Tracker */}
+      <WaterTracker />
+
       {/* Goals Preview */}
       {goalProgress.length > 0 && (
         <div className="bg-gray-900 border border-white/10 rounded-2xl p-4">
           <div className="flex justify-between items-center mb-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Active Goals</p>
-            <Link to="/goals" className="text-xs text-green-400 font-medium">See all →</Link>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+              Active Goals
+            </p>
+            <Link to="/goals" className="text-xs text-green-400 font-medium">
+              See all →
+            </Link>
           </div>
           <div className="flex flex-col gap-4">
             {goalProgress.slice(0, 2).map(g => (
@@ -133,17 +174,23 @@ export default function Dashboard() {
       {/* Today's Workouts */}
       {todayLogs.length > 0 && (
         <div className="bg-gray-900 border border-white/10 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Today's Activity</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+            Today's Activity
+          </p>
           <div className="flex flex-col divide-y divide-white/5">
             {todayLogs.map(l => (
               <div key={l.id} className="flex justify-between items-center py-3">
                 <div>
                   <p className="text-sm font-medium">{l.type}</p>
-                  {l.notes && <p className="text-xs text-gray-400 mt-0.5 italic">"{l.notes}"</p>}
+                  {l.notes && (
+                    <p className="text-xs text-gray-400 mt-0.5 italic">"{l.notes}"</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-blue-400 font-medium">{l.duration} min</p>
-                  {l.calories > 0 && <p className="text-xs text-gray-400">{l.calories} kcal</p>}
+                  {l.calories > 0 && (
+                    <p className="text-xs text-gray-400">{l.calories} kcal</p>
+                  )}
                 </div>
               </div>
             ))}
@@ -156,7 +203,9 @@ export default function Dashboard() {
         <div className="bg-gray-900 border border-white/10 rounded-2xl p-10 text-center">
           <p className="text-4xl mb-3">🏃</p>
           <p className="font-bold text-lg mb-1">Start your journey</p>
-          <p className="text-sm text-gray-400 mb-5">Log your first workout to begin tracking progress</p>
+          <p className="text-sm text-gray-400 mb-5">
+            Log your first workout to begin tracking progress
+          </p>
           <Link
             to="/log"
             className="inline-block bg-green-400 text-gray-950 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-green-300 transition"
