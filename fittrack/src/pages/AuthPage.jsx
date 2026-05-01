@@ -96,9 +96,9 @@ function RegisterForm({ onSwitch }) {
       setError('Password must be at least 6 characters')
       return
     }
-    const res = register(name, email, password)
+   const res = register(name, email, password)
     if (res.error) setError(res.error)
-    else navigate('/dashboard')
+    else navigate('/onboarding')
   }
 
   return (
