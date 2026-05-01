@@ -7,16 +7,13 @@ const navItems = [
   { to: '/history', icon: '◷', label: 'History' },
   { to: '/goals', icon: '◎', label: 'Goals' },
   { to: '/progress', icon: '↗', label: 'Progress' },
+  { to: '/records', icon: '🏆', label: 'Records' },
+  { to: '/profile', icon: '👤', label: 'Profile' },
 ]
 
 export default function Layout({ children }) {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-950 text-white">
@@ -27,13 +24,12 @@ export default function Layout({ children }) {
           FitTrack
         </span>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">{user?.name}</span>
-          <button
-            onClick={handleLogout}
-            className="text-xs text-gray-400 bg-gray-800 border border-white/10 rounded-lg px-3 py-1.5 hover:text-white transition"
+          <div
+            onClick={() => navigate('/profile')}
+            className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-400 flex items-center justify-center text-gray-950 font-bold text-sm cursor-pointer hover:opacity-90 transition"
           >
-            Logout
-          </button>
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
         </div>
       </header>
 
@@ -43,23 +39,25 @@ export default function Layout({ children }) {
       </main>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur border-t border-white/10 flex justify-around items-center py-2">
-        {navItems.map(item => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition text-xs font-medium
-              ${isActive
-                ? 'text-green-400 bg-green-400/10'
-                : 'text-gray-500 hover:text-gray-300'
-              }`
-            }
-          >
-            <span className="text-lg">{item.icon}</span>
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur border-t border-white/10">
+        <div className="flex justify-around items-center py-2 max-w-2xl mx-auto">
+          {navItems.map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition text-xs font-medium
+                ${isActive
+                  ? 'text-green-400 bg-green-400/10'
+                  : 'text-gray-500 hover:text-gray-300'
+                }`
+              }
+            >
+              <span className="text-lg">{item.icon}</span>
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
       </nav>
 
     </div>
