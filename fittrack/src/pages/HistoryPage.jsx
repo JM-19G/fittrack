@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useFitness } from '../context/FitnessContext'
+import { useNavigate } from 'react-router-dom'
 
 const TYPES = ['All', 'Running', 'Cycling', 'Walking', 'Swimming', 'Strength Training', 'HIIT', 'Yoga', 'Other']
 
@@ -35,6 +36,8 @@ export default function HistoryPage() {
     }
     return Object.entries(groups).sort(([a], [b]) => new Date(b) - new Date(a))
   }, [filtered])
+
+  const navigate = useNavigate()
 
   return (
     <div className="flex flex-col gap-4">
@@ -123,23 +126,31 @@ export default function HistoryPage() {
                       <button
                         onClick={() => { deleteLog(log.id); setConfirmDelete(null) }}
                         className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30"
-                      >
-                        Delete
+                       >
+                       Delete
                       </button>
                       <button
                         onClick={() => setConfirmDelete(null)}
                         className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 text-gray-400 border border-white/10"
-                      >
-                        Cancel
+                       >
+                       Cancel
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setConfirmDelete(log.id)}
-                      className="text-gray-500 hover:text-red-400 text-xl ml-3 leading-none transition"
-                    >
-                      ×
-                    </button>
+                    <div className="flex gap-2 ml-3">
+                      <button
+                        onClick={() => navigate('/log', { state: { log } })}
+                        className="text-xs px-3 py-1.5 rounded-lg bg-blue-400/10 text-blue-400 border border-blue-400/20 hover:bg-blue-400/20 transition"
+                       >
+                       Edit
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(log.id)}
+                        className="text-gray-500 hover:text-red-400 text-xl leading-none transition"
+                       >
+                       ×
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
