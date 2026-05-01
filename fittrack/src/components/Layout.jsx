@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 
 const navItems = [
   { to: '/dashboard', icon: '⬡', label: 'Home' },
@@ -14,6 +15,7 @@ const navItems = [
 export default function Layout({ children }) {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-950 text-white">
@@ -24,10 +26,16 @@ export default function Layout({ children }) {
           FitTrack
         </span>
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="text-gray-400 hover:text-white transition text-lg w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
+           >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
           <div
             onClick={() => navigate('/profile')}
             className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-400 flex items-center justify-center text-gray-950 font-bold text-sm cursor-pointer hover:opacity-90 transition"
-          >
+           >
             {user?.name?.charAt(0).toUpperCase()}
           </div>
         </div>
