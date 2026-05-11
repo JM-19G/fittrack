@@ -6,11 +6,17 @@ const FitnessContext = createContext(null)
 function getKey(userId, type) { return `fittrack_${type}_${userId}` }
 
 function loadData(userId, type, fallback) {
-  try { return JSON.parse(localStorage.getItem(getKey(userId, type)) || 'null') ?? fallback }
-  catch { return fallback }
+  try {
+    const raw = localStorage.getItem(getKey(userId, type))
+    if (raw === null) return fallback
+    return JSON.parse(raw)
+  } catch { return fallback }
 }
+
 function saveData(userId, type, data) {
-  localStorage.setItem(getKey(userId, type), JSON.stringify(data))
+  try {
+    localStorage.setItem(getKey(userId, type), JSON.stringify(data))
+  } catch { }
 }
 
 function logsReducer(state, action) {
@@ -40,45 +46,107 @@ export function FitnessProvider({ children }) {
   const [logs, dispatchLogs] = useReducer(logsReducer, [])
   const [goals, dispatchGoals] = useReducer(goalsReducer, [])
   const [profile, setProfileState] = useState({})
+  const [ready, setReady] = useState(false)
 
+  // Load data whenever user changes
   useEffect(() => {
     if (!uid) {
       dispatchLogs({ type: 'SET', payload: [] })
       dispatchGoals({ type: 'SET', payload: [] })
+      setProfileState({})
+      setReady(false)
       return
     }
+
+    // Load logs
     const savedLogs = loadData(uid, 'logs', [])
     dispatchLogs({ type: 'SET', payload: savedLogs })
 
+    // Load goals
     const savedGoals = loadData(uid, 'goals', [])
     const defaultGoals = savedGoals.length ? savedGoals : [
-      { id: crypto.randomUUID(), userId: uid, name: 'Weekly Workouts', type: 'weekly', target: 4, unit: 'workouts', createdAt: new Date().toISOString() },
-      { id: crypto.randomUUID(), userId: uid, name: 'Monthly Activity', type: 'monthly', target: 16, unit: 'workouts', createdAt: new Date().toISOString() },
+      {
+        id: crypto.randomUUID(),
+        userId: uid,
+        name: 'Weekly Workouts',
+        type: 'weekly',
+        target: 4,
+        unit: 'workouts',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        userId: uid,
+        name: 'Monthly Activity',
+        type: 'monthly',
+        target: 16,
+        unit: 'workouts',
+        createdAt: new Date().toISOString()
+      },
     ]
     if (!savedGoals.length) saveData(uid, 'goals', defaultGoals)
     dispatchGoals({ type: 'SET', payload: defaultGoals })
 
-    setProfileState(loadData(uid, 'profile', { weight: '', height: '', hydrationGoal: 2000 }))
+    // Load profile
+    const savedProfile = loadData(uid, 'profile', {
+      weight: '',
+      height: '',
+      age: '',
+      gender: '',
+      dailyCalorieGoal: '2000',
+      hydrationGoal: '2000',
+      fitnessGoal: '',
+    })
+    setProfileState(savedProfile)
+    setReady(true)
   }, [uid])
 
-  useEffect(() => { if (uid) saveData(uid, 'logs', logs) }, [uid, logs])
-  useEffect(() => { if (uid) saveData(uid, 'goals', goals) }, [uid, goals])
+  // Save logs to localStorage whenever they change
+  useEffect(() => {
+    if (uid && ready) {
+      saveData(uid, 'logs', logs)
+    }
+  }, [uid, logs, ready])
+
+  // Save goals to localStorage whenever they change
+  useEffect(() => {
+    if (uid && ready) {
+      saveData(uid, 'goals', goals)
+    }
+  }, [uid, goals, ready])
 
   const addLog = useCallback((entry) => {
-    const log = { ...entry, id: crypto.randomUUID(), userId: uid, createdAt: new Date().toISOString() }
+    const log = {
+      ...entry,
+      id: crypto.randomUUID(),
+      userId: uid,
+      createdAt: new Date().toISOString()
+    }
     dispatchLogs({ type: 'ADD', payload: log })
     return log
   }, [uid])
 
-  const deleteLog = useCallback((id) => dispatchLogs({ type: 'DELETE', id }), [])
-  const updateLog = useCallback((log) => dispatchLogs({ type: 'UPDATE', payload: log }), [])
+  const deleteLog = useCallback((id) => {
+    dispatchLogs({ type: 'DELETE', id })
+  }, [])
+
+  const updateLog = useCallback((log) => {
+    dispatchLogs({ type: 'UPDATE', payload: log })
+  }, [])
 
   const addGoal = useCallback((entry) => {
-    const goal = { ...entry, id: crypto.randomUUID(), userId: uid, createdAt: new Date().toISOString() }
+    const goal = {
+      ...entry,
+      id: crypto.randomUUID(),
+      userId: uid,
+      createdAt: new Date().toISOString()
+    }
     dispatchGoals({ type: 'ADD', payload: goal })
   }, [uid])
 
-  const deleteGoal = useCallback((id) => dispatchGoals({ type: 'DELETE', id }), [])
+  const deleteGoal = useCallback((id) => {
+    dispatchGoals({ type: 'DELETE', id })
+  }, [])
 
   const updateProfile = useCallback((data) => {
     setProfileState(prev => {
@@ -89,7 +157,18 @@ export function FitnessProvider({ children }) {
   }, [uid])
 
   return (
-    <FitnessContext.Provider value={{ logs, goals, profile, addLog, deleteLog, updateLog, addGoal, deleteGoal, updateProfile }}>
+    <FitnessContext.Provider value={{
+      logs,
+      goals,
+      profile,
+      ready,
+      addLog,
+      deleteLog,
+      updateLog,
+      addGoal,
+      deleteGoal,
+      updateProfile
+    }}>
       {children}
     </FitnessContext.Provider>
   )
